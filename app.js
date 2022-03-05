@@ -104,27 +104,27 @@ app.get("/login", function(req, res){
   res.render("login");
 });
 
-// app.post("/login",function(req,res){
-//   const user = new User({
-//     username: req.body.username,
-//     password: req.body.password
-//   });
-//   req.login(user,function(err){
-//     if(err){
-//       console.log(err);
-//     }else{
-//       passport.authenticate("local")(req,res,function(){
-//         res.redirect("/secrets");
-//       })
-//     }
-//   })
-// });
-// This login post is much shorter, but do the same work as the above one.
-app.post("/login",
-  passport.authenticate("local", { failureRedirect: "/login", failureMessage: true }),
-  function(req, res) {
-    res.redirect("/secrets");
+app.post("/login",function(req,res){
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password
   });
+  req.login(user,function(err){
+    if(err){
+      console.log(err);
+    }else{
+      passport.authenticate("local")(req,res,function(){
+        res.redirect("/secrets");
+      })
+    }
+  })
+});
+// This login post is much shorter, but do the same work as the above one.
+// app.post("/login",
+//   passport.authenticate("local", { failureRedirect: "/login", failureMessage: true }),
+//   function(req, res) {
+//     res.redirect("/secrets");
+//   });
 //bycrypt and salted securitymeasure to do app.post("/login")
 // app.post("/login", function(req,res){
 //
