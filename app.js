@@ -42,7 +42,8 @@ mongoose.connect("mongodb://localhost:27017/userDB", {
 const userSchema = new mongoose.Schema({
   userName: String,
   passWord: String,
-  googleId: String
+  googleId: String,
+  secret: String
 });
 // after using the session, add a plug in to hash and salt user to add it into the mongo dattabase.
 userSchema.plugin(passportLocalMongoose);
@@ -111,14 +112,19 @@ app.get("/auth/google/secrets",
 app.get("/register", function(req, res) {
   res.render("register");
 });
-app.get("/secrets", function(req, res) {
 
-  if (req.isAuthenticated()) {
-    res.render("secrets");
-  } else {
-    res.redirect("/login");
-  }
+app.get("/secrets", function(req, res) {
+  //pick out users whoes secret is not null
+  User.find({"secret":{$ne: null}}, function(err, foundUsers){
+    if(err){
+      console.log(err);
+    }else{
+      res.render("secrets", {usersWithSecrets:foundUsers});
+    }
+
+  });
 });
+
 app.post("/register", function(req, res) {
   // the register() is from passportLocalMongoose to add data into MongoDB.
   User.register({
@@ -211,7 +217,28 @@ app.post("/login",
 //
 //   });
 // });
-
+app.get("/submit",function(req,res){
+  if(req.isAuthenticated()){
+    res.render("submit");
+  }else{
+    res.redirect("/login");
+  }
+});
+app.post("/submit",function(req,res){
+  const submittedSecret = req.body.secret;
+  User.findById(req.user.id, function(err,foundUser){
+    if(err){
+      console.log(err);
+    }else{
+      if (foundUser){
+        foundUser.secret= submittedSecret;
+        foundUser.save(function(){
+          res.redirect("/secrets");
+        });
+      }
+    }
+  });
+});
 app.get("/logout", function(req, res) {
   req.logout();
   res.redirect("/");
